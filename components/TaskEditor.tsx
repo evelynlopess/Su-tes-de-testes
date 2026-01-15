@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { TestTask, TestStep, TestStatus, TestImage } from '../types';
 import { 
   Trash2, 
@@ -15,7 +15,9 @@ import {
   Clock,
   RotateCcw,
   Edit2,
-  Type
+  Type,
+  GripVertical,
+  FileCode
 } from 'lucide-react';
 
 interface AutoResizingTextareaProps {
@@ -60,6 +62,7 @@ interface TaskEditorProps {
 
 const TaskEditor: React.FC<TaskEditorProps> = ({ task, onUpdate, onDelete }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [draggedImgIdx, setDraggedImgIdx] = useState<number | null>(null);
 
   const updateField = (field: keyof TestTask, value: any) => {
     onUpdate({ ...task, [field]: value });
@@ -92,7 +95,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ task, onUpdate, onDelete }) => 
       };
       reader.readAsDataURL(file);
     });
-    // Limpa o input para permitir o mesmo arquivo novamente se necessário
     e.target.value = '';
   };
 
@@ -104,6 +106,30 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ task, onUpdate, onDelete }) => 
 
   const removeImage = (index: number) => {
     updateField('images', task.images.filter((_, i) => i !== index));
+  };
+
+  // Reordenar imagens
+  const handleImageDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedImgIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleImageDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedImgIdx === null || draggedImgIdx === index) return;
+  };
+
+  const handleImageDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedImgIdx === null || draggedImgIdx === targetIndex) return;
+
+    const newImages = [...task.images];
+    const draggedItem = newImages[draggedImgIdx];
+    newImages.splice(draggedImgIdx, 1);
+    newImages.splice(targetIndex, 0, draggedItem);
+    
+    updateField('images', newImages);
+    setDraggedImgIdx(null);
   };
 
   const toggleStatus = (target: TestStatus) => {
@@ -292,9 +318,22 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ task, onUpdate, onDelete }) => 
             <div className="lg:col-span-5 space-y-10">
               
               <section>
-                <div className="flex items-center gap-2 mb-3 text-slate-800 font-semibold uppercase text-xs tracking-wider">
-                  <Code className="w-4 h-4 text-indigo-500" />
-                  <h3>Logs de Evidência</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-slate-800 font-semibold uppercase text-xs tracking-wider">
+                    <Code className="w-4 h-4 text-indigo-500" />
+                    <h3>Logs de Evidência</h3>
+                  </div>
+                  {/* Campo de Nome do Arquivo de Log */}
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                    <FileCode className="w-3.5 h-3.5 text-slate-400" />
+                    <input 
+                      type="text"
+                      className="text-[10px] font-bold text-slate-600 bg-transparent outline-none w-32 placeholder:text-slate-300"
+                      value={task.logFileName || ''}
+                      onChange={(e) => updateField('logFileName', e.target.value)}
+                      placeholder="Nome do .txt..."
+                    />
+                  </div>
                 </div>
                 <div className="relative group">
                   <textarea 
@@ -332,12 +371,22 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ task, onUpdate, onDelete }) => 
                 </div>
                 <div className="grid grid-cols-1 gap-6">
                   {(task.images || []).map((img, i) => (
-                    <div key={i} className="flex flex-col gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl group relative">
-                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-100 shadow-sm bg-white ring-1 ring-slate-100">
+                    <div 
+                      key={i} 
+                      draggable 
+                      onDragStart={(e) => handleImageDragStart(e, i)}
+                      onDragOver={(e) => handleImageDragOver(e, i)}
+                      onDrop={(e) => handleImageDrop(e, i)}
+                      className={`flex flex-col gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl group relative transition-all ${draggedImgIdx === i ? 'opacity-40 scale-95' : 'opacity-100'}`}
+                    >
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-100 shadow-sm bg-white ring-1 ring-slate-100 cursor-grab active:cursor-grabbing">
                         <img src={img.url} alt={`Evidence ${i}`} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                          <GripVertical className="w-4 h-4 text-slate-500" />
+                        </div>
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                           <button 
-                            onClick={() => removeImage(i)}
+                            onClick={(e) => { e.stopPropagation(); removeImage(i); }}
                             className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
                           >
                             <Trash2 className="w-5 h-5" />

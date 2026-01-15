@@ -24,6 +24,7 @@ interface ProjectViewProps {
   allTasks: TestTask[];
   onTasksChange: (tasks: TestTask[]) => void;
   onBack: () => void;
+  onDeleteProject: (id: string) => void;
 }
 
 const CAT_STYLES: Record<TestCategory, { name: string; icon: any; color: string }> = {
@@ -34,7 +35,7 @@ const CAT_STYLES: Record<TestCategory, { name: string; icon: any; color: string 
   CONFIRMATION: { name: 'Confirmação', icon: SearchCheck, color: 'text-emerald-500 bg-emerald-500' }
 };
 
-const ProjectView: React.FC<ProjectViewProps> = ({ project, allTasks, onTasksChange, onBack }) => {
+const ProjectView: React.FC<ProjectViewProps> = ({ project, allTasks, onTasksChange, onBack, onDeleteProject }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [filter, setFilter] = useState<TestStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,14 +83,12 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, allTasks, onTasksCha
     onTasksChange(allTasks.map(t => t.id === updatedTask.id ? updatedTask : t));
   };
 
-  // Função centralizada de exclusão
   const handleDeleteTask = (id: string) => {
-    if (window.confirm('Excluir cenário permanentemente? Esta ação não pode ser desfeita.')) {
-      const newTasksList = allTasks.filter(t => t.id !== id);
-      onTasksChange(newTasksList);
-      if (selectedTaskId === id) {
-        setSelectedTaskId(null);
-      }
+    // Exclusão imediata e definitiva
+    const newTasksList = allTasks.filter(t => t.id !== id);
+    onTasksChange(newTasksList);
+    if (selectedTaskId === id) {
+      setSelectedTaskId(null);
     }
   };
 
@@ -101,10 +100,9 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, allTasks, onTasksCha
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Excluir TODAS as tarefas DESTE projeto?')) {
-      onTasksChange(allTasks.filter(t => t.projectId !== project.id));
-      setSelectedTaskId(null);
-    }
+    // Agora instantâneo para todas as tarefas do projeto atual
+    onTasksChange(allTasks.filter(t => t.projectId !== project.id));
+    setSelectedTaskId(null);
   };
 
   const handleToggleComplete = (id: string) => {
@@ -210,18 +208,20 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, allTasks, onTasksCha
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-100 space-y-3 bg-slate-50/50">
+        <div className="p-4 border-t border-slate-100 space-y-2 bg-slate-50/50">
           <button 
             onClick={() => setShowReport(true)}
             className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
           >
             <Download className="w-4 h-4" /> Gerar Relatório
           </button>
+          
           <button 
             onClick={handleClearAll}
-            className="flex items-center justify-center gap-2 w-full py-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all"
+            className="flex items-center justify-center gap-1.5 w-full py-2.5 px-4 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 hover:border-rose-100 shadow-sm bg-white"
+            title="Limpar todos os cenários deste projeto"
           >
-            <Eraser className="w-3.5 h-3.5" /> Resetar Dados
+            <Eraser className="w-3.5 h-3.5" /> Resetar Tarefas
           </button>
         </div>
       </aside>

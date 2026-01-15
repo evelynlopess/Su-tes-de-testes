@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { TestProject, TestTask, TestStatus, TestCategory, ProjectStatus } from './types';
+import { TestProject, TestTask, TestCategory } from './types';
 import HomeView from './components/HomeView';
 import ProjectView from './components/ProjectView';
 
@@ -17,6 +17,7 @@ const App: React.FC = () => {
 
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
 
+  // Sincronização robusta com localStorage
   useEffect(() => {
     localStorage.setItem('testmaster_projects', JSON.stringify(projects));
   }, [projects]);
@@ -34,18 +35,20 @@ const App: React.FC = () => {
       status: 'BACKLOG',
       createdAt: Date.now(),
     };
-    setProjects([newProject, ...projects]);
+    setProjects(prev => [newProject, ...prev]);
   };
 
   const handleUpdateProject = (projectId: string, updates: Partial<TestProject>) => {
-    setProjects(projects.map(p => p.id === projectId ? { ...p, ...updates } : p));
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
   };
 
   const handleDeleteProject = (projectId: string) => {
-    if (window.confirm('Tem certeza? Isso excluirá o projeto e TODAS as tarefas dentro dele.')) {
-      setProjects(projects.filter(p => p.id !== projectId));
-      setTasks(tasks.filter(t => t.projectId !== projectId));
-      if (currentProjectId === projectId) setCurrentProjectId(null);
+    // Exclusão instantânea sem confirmação para cumprir o requisito "clicou sumiu"
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    setTasks(prev => prev.filter(t => t.projectId !== projectId));
+    
+    if (currentProjectId === projectId) {
+      setCurrentProjectId(null);
     }
   };
 
@@ -74,6 +77,7 @@ const App: React.FC = () => {
           allTasks={tasks}
           onTasksChange={handleUpdateTasks}
           onBack={() => setCurrentProjectId(null)}
+          onDeleteProject={handleDeleteProject}
         />
       )}
     </div>

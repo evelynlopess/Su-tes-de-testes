@@ -22,6 +22,7 @@ export interface TestTask {
   steps: TestStep[];
   observations: string;
   logs: string;
+  logFileName?: string; // Novo campo para nomear o arquivo .txt de log
   images: TestImage[]; 
   status: TestStatus;
   completed: boolean;
