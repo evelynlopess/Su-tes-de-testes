@@ -1,6 +1,6 @@
 {
   "name": "TestMaster Pro",
-  "description": "A professional testing task manager designed for QA engineers to document test cases, steps, logs, and visual evidence with automated report generation.",
+  "description": "Gestor de tarefas com evidências visuais, logs e captura de câmera para QA e organização pessoal.",
   "requestFramePermissions": [
     "camera"
   ]
