@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { TestProject, TestTask, TestCategory } from './types';
 import HomeView from './components/HomeView';
@@ -17,7 +16,6 @@ const App: React.FC = () => {
 
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
 
-  // Sincronização robusta com localStorage
   useEffect(() => {
     localStorage.setItem('testmaster_projects', JSON.stringify(projects));
   }, [projects]);
@@ -43,10 +41,8 @@ const App: React.FC = () => {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    // Exclusão instantânea sem confirmação para cumprir o requisito "clicou sumiu"
     setProjects(prev => prev.filter(p => p.id !== projectId));
     setTasks(prev => prev.filter(t => t.projectId !== projectId));
-    
     if (currentProjectId === projectId) {
       setCurrentProjectId(null);
     }
@@ -61,7 +57,7 @@ const App: React.FC = () => {
   , [projects, currentProjectId]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden font-sans bg-slate-50 text-slate-900">
+    <div className="h-screen w-screen overflow-hidden font-sans bg-slate-50 text-slate-900 selection:bg-indigo-100">
       {!currentProjectId ? (
         <HomeView 
           projects={projects} 

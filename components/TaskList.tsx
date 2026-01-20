@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TestTask } from '../types';
 import { CheckSquare, Square, ImageIcon, ChevronRight } from 'lucide-react';
@@ -15,7 +14,7 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ tasks, selectedId, onSelect, onToggleComplete }) => {
   if (tasks.length === 0) {
     return (
-      <div className="py-12 text-center text-slate-400 text-xs italic bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+      <div className="py-12 text-center text-slate-500 text-xs italic bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
         Nenhuma tarefa criada ainda.
       </div>
     );
@@ -45,22 +44,22 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedId, onSelect, onTogg
                 }}
                 className={`flex-shrink-0 transition-all active:scale-75 ${
                   task.completed 
-                    ? (isSelected ? 'text-white' : 'text-emerald-500') 
-                    : (isSelected ? 'text-indigo-300' : 'text-slate-200 hover:text-indigo-400')
+                    ? (isSelected ? 'text-white' : 'text-emerald-600') 
+                    : (isSelected ? 'text-indigo-200' : 'text-slate-300 hover:text-indigo-400')
                 }`}
               >
                 {task.completed ? (
-                  <CheckSquare className="w-6 h-6 fill-current bg-white rounded-md" />
+                  <CheckSquare className={`w-6 h-6 fill-current ${isSelected ? 'bg-indigo-500' : 'bg-white'} rounded-md`} />
                 ) : (
                   <Square className="w-6 h-6 stroke-[2.5px]" />
                 )}
               </button>
               
               <div className="flex-1 min-w-0">
-                <h3 className={`text-sm font-bold truncate transition-all ${
+                <h3 className={`text-sm font-black truncate transition-all ${
                   task.completed 
                     ? (isSelected ? 'text-indigo-100 line-through opacity-60' : 'text-slate-400 line-through italic') 
-                    : (isSelected ? 'text-white' : 'text-slate-800')
+                    : (isSelected ? 'text-white' : 'text-slate-900')
                 }`}>
                   {task.title || 'Sem título'}
                 </h3>
@@ -76,14 +75,14 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedId, onSelect, onTogg
                     </span>
                   )}
                   {hasImages && (
-                    <span className={`flex items-center gap-1 text-[9px] font-bold ${isSelected ? 'text-indigo-200' : 'text-slate-400'}`}>
+                    <span className={`flex items-center gap-1 text-[9px] font-bold ${isSelected ? 'text-indigo-200' : 'text-slate-500'}`}>
                       <ImageIcon className="w-3 h-3" /> {task.images.length}
                     </span>
                   )}
                 </div>
               </div>
 
-              <ChevronRight className={`w-4 h-4 transition-all ${isSelected ? 'text-white translate-x-1' : 'text-slate-200 opacity-0 group-hover:opacity-100'}`} />
+              <ChevronRight className={`w-4 h-4 transition-all ${isSelected ? 'text-white translate-x-1' : 'text-slate-300 opacity-0 group-hover:opacity-100'}`} />
             </div>
           </div>
         );
